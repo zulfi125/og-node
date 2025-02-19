@@ -46,5 +46,5 @@ docker logs -f 0g-da-client
 
 "Great, all set! If you have any questions, don’t hesitate to ask in our Telegram channel."
 Or if you'd like something more friendly and engaging:
-- Telegram - https://t.me/Crypto_airdropHM
-- Youtube - https://www.youtube.com/@CryptoAirdropHindi6
+- Telegram - https://t.me/t.me/LearnFastEarn4All
+- Youtube - https://www.youtube.com/@LearnFastEarn2.0/
