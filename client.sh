@@ -54,7 +54,7 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plug
 sudo service docker start
 
 # Verify installation
-
+sudo docker run hello-world
 # Install dependencies
 echo "Installing git..."
 sudo apt install git -y
