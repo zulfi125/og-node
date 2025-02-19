@@ -26,35 +26,38 @@ echo -e "*     ${GREEN}Thank you for participating!${CYAN}    *"
 echo -e "*                                     *"
 echo -e "***************************************${RESET}"
 
-# Update and install dependencies
-echo "Updating system and installing dependencies..."
-sudo apt update && sudo apt install -y git docker.io
+# Install dependencies
+echo "Installing git..."
+sudo apt install git -y
+
+echo "Installing docker.io..."
+sudo apt install docker.io -y
 
 # Start and enable Docker service
 echo "Starting and enabling Docker..."
 sudo systemctl start docker
 sudo systemctl enable docker
 
-# Verify Docker installation
-echo "Checking Docker installation..."
-docker --version || { echo "${RED}Docker installation failed!${RESET}"; exit 1; }
+# Check Docker status
+echo "Checking Docker status..."
+sudo systemctl status docker
 
-# Clone OG Node (0G DA-Client) repository
+# Clone DA-Client repository
 echo "Cloning DA-Client repository..."
-git clone https://github.com/0glabs/0g-da-client.git || { echo "${RED}Failed to clone repository!${RESET}"; exit 1; }
+git clone https://github.com/0glabs/0g-da-client.git
 
-# Navigate to the project directory
-cd 0g-da-client || { echo "${RED}Failed to enter directory!${RESET}"; exit 1; }
+# Go to DA-Client directory
+cd 0g-da-client
 
 # Build Docker image
 echo "Building Docker image..."
-docker build -t 0g-da-client -f combined.Dockerfile . || { echo "${RED}Docker build failed!${RESET}"; exit 1; }
+docker build -t 0g-da-client -f combined.Dockerfile .
 
 # Create envfile.env
 echo "Creating envfile.env..."
 cat <<EOF > envfile.env
 COMBINED_SERVER_CHAIN_RPC=https://evmrpc-testnet.0g.ai
-COMBINED_SERVER_PRIVATE_KEY=YOUR_PRIVATE_KEY_HERE  # Replace with your actual private key!
+COMBINED_SERVER_PRIVATE_KEY=YOUR_PRIVATE_KEY
 ENTRANCE_CONTRACT_ADDR=0x857C0A28A8634614BB2C96039Cf4a20AFF709Aa9
 
 COMBINED_SERVER_RECEIPT_POLLING_ROUNDS=180
@@ -83,15 +86,11 @@ BATCHER_CHAIN_READ_TIMEOUT=12s
 BATCHER_CHAIN_WRITE_TIMEOUT=13s
 EOF
 
-echo "${GREEN}Setup completed successfully!${RESET}"
+echo "Setup completed successfully!"
 
 # Final message
-echo -e "${CYAN}***************************************"
-echo -e "*                                     *"
-echo -e "*     ${GREEN}Thank you for participating!${CYAN}    *"
-echo -e "*                                     *"
-echo -e "***************************************${RESET}"
-
-# Instructions to run the node
-echo "${YELLOW}To start your OG Node, run the following command:${RESET}"
-echo "${GREEN}docker run --env-file envfile.env -p 51001:51001 -d 0g-da-client${RESET}"
+echo "***************************************"
+echo "*                                     *"
+echo "*     Thank you for participating!    *"
+echo "*                                     *"
+echo "***************************************"
