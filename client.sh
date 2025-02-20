@@ -26,11 +26,19 @@ echo -e "*     ${GREEN}Thank you for participating!${CYAN}    *"
 echo -e "*                                     *"
 echo -e "***************************************${RESET}"
 
-# Update package list
+# Update and upgrade system
+sudo apt update -y && sudo apt upgrade -y
+
+# Remove conflicting Docker packages
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do 
+    sudo apt-get remove -y $pkg
+done
+
+# Update package lists
 sudo apt-get update
 
-# Install required packages
-sudo apt-get install -y ca-certificates curl
+# Install necessary dependencies
+sudo apt-get install -y ca-certificates curl gnupg git
 
 # Create directory for Docker's GPG key
 sudo install -m 0755 -d /etc/apt/keyrings
@@ -39,33 +47,24 @@ sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-# Add Docker repository to Apt sources
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-$(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+# Add Docker repository to APT sources
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \ 
+https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \ 
 sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-# Update package list again
-sudo apt-get update
+# Update package lists again
+sudo apt update -y && sudo apt upgrade -y
 
-# Install Docker packages
+# Install Docker
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Start Docker service
-sudo service docker start
-
-# Verify installation
-sudo docker run hello-world
-# Install dependencies
-echo "Installing git..."
-sudo apt install git -y
-
-echo "Installing docker.io..."
-sudo apt install docker.io -y
 
 # Start and enable Docker service
 echo "Starting and enabling Docker..."
 sudo systemctl start docker
 sudo systemctl enable docker
+
+# Verify Docker installation
+sudo docker run hello-world
 
 # Check Docker status
 echo "Checking Docker status..."
