@@ -21,12 +21,48 @@ echo -e "${CYAN}***************************************"
 echo -e "*     ${GREEN}Thank you for participating!${CYAN}    *"
 echo -e "***************************************${RESET}"
 
-# Install dependencies
-echo "Installing git..."
-sudo apt install git -y
+# Update and Upgrade System
+echo "Updating and upgrading system..."
+sudo apt update -y && sudo apt upgrade -y
 
-echo "Installing docker.io..."
-sudo apt install docker.io -y
+# Remove conflicting Docker packages
+for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do 
+    sudo apt-get remove -y $pkg
+  done
+
+# Update again
+echo "Updating system again..."
+sudo apt-get update -y
+
+# Install dependencies
+echo "Installing required packages..."
+sudo apt-get install -y ca-certificates curl gnupg
+
+# Set up keyrings
+echo "Setting up keyrings..."
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add Docker repository
+echo "Adding Docker repository..."
+echo \  "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" | \  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Update and upgrade again
+echo "Updating system after adding Docker repository..."
+sudo apt update -y && sudo apt upgrade -y
+
+# Install Docker
+echo "Installing Docker..."
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Test Docker
+echo "Testing Docker installation..."
+sudo docker run hello-world
+
+# Install git
+echo "Installing git..."
+sudo apt install -y git
 
 # Start and enable Docker service
 echo "Starting and enabling Docker..."
@@ -35,7 +71,7 @@ sudo systemctl enable docker
 
 # Check Docker status
 echo "Checking Docker status..."
-sudo systemctl status docker
+sudo systemctl status docker --no-pager
 
 # Clone DA-Client repository
 echo "Cloning DA-Client repository..."
