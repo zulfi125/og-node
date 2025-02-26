@@ -56,6 +56,17 @@ sudo apt update -y && sudo apt upgrade -y
 echo "Installing Docker..."
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
+# Start and enable Docker service
+echo "Starting and enabling Docker..."
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo systemctl restart docker
+sudo systemctl daemon-reload
+
+# Verify Docker installation
+echo "Verifying Docker installation..."
+docker --version || { echo "Docker installation failed. Exiting..."; exit 1; }
+
 # Test Docker
 echo "Testing Docker installation..."
 sudo docker run hello-world
@@ -63,11 +74,6 @@ sudo docker run hello-world
 # Install git
 echo "Installing git..."
 sudo apt install -y git
-
-# Start and enable Docker service
-echo "Starting and enabling Docker..."
-sudo systemctl start docker
-sudo systemctl enable docker
 
 # Check Docker status
 echo "Checking Docker status..."
@@ -83,6 +89,9 @@ cd 0g-da-client
 # Build Docker image
 echo "Building Docker image..."
 docker build -t 0g-da-client -f combined.Dockerfile .
+
+# Ensure run directory exists
+mkdir -p run
 
 # Create envfile.env
 echo "Creating envfile.env..."
@@ -116,6 +125,10 @@ BATCHER_SIGNING_TIMEOUT=60s
 BATCHER_CHAIN_READ_TIMEOUT=12s
 BATCHER_CHAIN_WRITE_TIMEOUT=13s
 EOF
+
+# Run Docker container
+echo "Running Docker container..."
+docker run -d --env-file envfile.env --name 0g-da-client -v $(pwd)/run:/runtime -p 51001:51001 0g-da-client combined
 
 echo "Setup completed successfully!"
 
