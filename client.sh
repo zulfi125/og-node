@@ -14,84 +14,63 @@ echo -e "*                                     *"
 echo -e "*      ${MAGENTA}LearnFastEarn ${CYAN}        *"
 echo -e "*                                     *"
 echo -e "***************************************"
-echo -e "📱 Telegram: ${YELLOW}https://t.me/LearnFastEarn4All${RESET}"
-echo -e "🎥 YouTube: ${YELLOW}https://www.youtube.com/@LearnFastEarn2.0${RESET}"
-echo -e "💻 GitHub Repo: ${YELLOW}https://github.com/zulfi125/${RESET}"
+echo -e "\xf09a Telegram: ${YELLOW}https://t.me/LearnFastEarn4All${RESET}"
+echo -e "\xf167 YouTube: ${YELLOW}https://www.youtube.com/@LearnFastEarn2.0${RESET}"
+echo -e "\xf09b GitHub Repo: ${YELLOW}https://github.com/zulfi125/${RESET}"
 echo -e "${CYAN}***************************************"
 echo -e "*     ${GREEN}Thank you for participating!${CYAN}    *"
 echo -e "***************************************${RESET}"
 
-# Update and Upgrade System
-echo "Updating and upgrading system..."
+# Update system
+echo "Updating system packages..."
 sudo apt update -y && sudo apt upgrade -y
 
-# Remove conflicting Docker packages
+# Remove conflicting packages
+echo "Removing conflicting packages..."
 for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do 
     sudo apt-get remove -y $pkg
-  done
-
-# Update again
-echo "Updating system again..."
-sudo apt-get update -y
+    done
 
 # Install dependencies
 echo "Installing required packages..."
+sudo apt-get update
 sudo apt-get install -y ca-certificates curl gnupg
 
-# Set up keyrings
-echo "Setting up keyrings..."
+# Setup Docker repository
+echo "Setting up Docker repository..."
 sudo install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Add Docker repository
-echo "Adding Docker repository..."
-echo \  "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" | \  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-# Update and upgrade again
-echo "Updating system after adding Docker repository..."
-sudo apt update -y && sudo apt upgrade -y
+echo "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 # Install Docker
 echo "Installing Docker..."
+sudo apt update -y && sudo apt upgrade -y
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Start and enable Docker service
-echo "Starting and enabling Docker..."
+echo "Starting and enabling Docker service..."
 sudo systemctl start docker
 sudo systemctl enable docker
-sudo systemctl restart docker
-sudo systemctl daemon-reload
-
-# Verify Docker installation
-echo "Verifying Docker installation..."
-docker --version || { echo "Docker installation failed. Exiting..."; exit 1; }
-
-# Test Docker
-echo "Testing Docker installation..."
-sudo docker run hello-world
-
-# Install git
-echo "Installing git..."
-sudo apt install -y git
 
 # Check Docker status
 echo "Checking Docker status..."
 sudo systemctl status docker --no-pager
 
+# Test Docker installation
+echo "Testing Docker installation..."
+sudo docker run hello-world
+
 # Clone DA-Client repository
 echo "Cloning DA-Client repository..."
 git clone https://github.com/0glabs/0g-da-client.git
 
-# Go to DA-Client directory
+# Navigate to DA-Client directory
 cd 0g-da-client
 
 # Build Docker image
 echo "Building Docker image..."
 docker build -t 0g-da-client -f combined.Dockerfile .
-
-# Ensure run directory exists
-mkdir -p run
 
 # Create envfile.env
 echo "Creating envfile.env..."
@@ -125,10 +104,6 @@ BATCHER_SIGNING_TIMEOUT=60s
 BATCHER_CHAIN_READ_TIMEOUT=12s
 BATCHER_CHAIN_WRITE_TIMEOUT=13s
 EOF
-
-# Run Docker container
-echo "Running Docker container..."
-docker run -d --env-file envfile.env --name 0g-da-client -v $(pwd)/run:/runtime -p 51001:51001 0g-da-client combined
 
 echo "Setup completed successfully!"
 
