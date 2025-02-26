@@ -1,13 +1,12 @@
 #!/bin/bash
 
-# Define colors for text
+# Define colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
-RESET='\033[0m'  # Reset color
+RESET='\033[0m'
 
 # Display LearnFastEarn Banner with Colors
 echo -e "${CYAN}***************************************"
@@ -15,50 +14,55 @@ echo -e "*                                     *"
 echo -e "*      ${MAGENTA}LearnFastEarn Info${CYAN}        *"
 echo -e "*                                     *"
 echo -e "***************************************"
-echo -e "Don't forget to check out our official channels:"
 echo -e "📱 Telegram: ${YELLOW}https://t.me/LearnFastEarn4All${RESET}"
 echo -e "🎥 YouTube: ${YELLOW}https://www.youtube.com/@LearnFastEarn2.0${RESET}"
 echo -e "💻 GitHub Repo: ${YELLOW}https://github.com/zulfi125/${RESET}"
-echo ""
 echo -e "${CYAN}***************************************"
-echo -e "*                                     *"
 echo -e "*     ${GREEN}Thank you for participating!${CYAN}    *"
-echo -e "*                                     *"
 echo -e "***************************************${RESET}"
-# Install dependencies
-echo "Installing git..."
-sudo apt install git -y
 
-echo "Installing docker.io..."
-sudo apt install docker.io -y
+# Install dependencies (skip sudo if running as root)
+if [ "$(id -u)" -ne 0 ]; then
+    SUDO="sudo"
+else
+    SUDO=""
+fi
 
-# Start and enable Docker service
+echo "Installing dependencies..."
+$SUDO apt update && $SUDO apt install -y git docker.io
+
+# Start and enable Docker
 echo "Starting and enabling Docker..."
-sudo systemctl start docker
-sudo systemctl enable docker
+$SUDO systemctl start docker
+$SUDO systemctl enable docker
+$SUDO systemctl is-active docker || { echo -e "${RED}Docker is not running!${RESET}"; exit 1; }
 
-# Check Docker status
-echo "Checking Docker status..."
-sudo systemctl status docker
+# Clone repository if not already cloned
+if [ ! -d "0g-da-client" ]; then
+    echo "Cloning DA-Client repository..."
+    git clone https://github.com/0glabs/0g-da-client.git
+else
+    echo "Repository already exists. Skipping clone."
+fi
 
-# Clone DA-Client repository
-echo "Cloning DA-Client repository..."
-git clone https://github.com/0glabs/0g-da-client.git
-
-# Go to DA-Client directory
-cd 0g-da-client
+# Navigate to repository
+cd 0g-da-client || { echo -e "${RED}Error: Failed to enter repository directory.${RESET}"; exit 1; }
 
 # Build Docker image
 echo "Building Docker image..."
 docker build -t 0g-da-client -f combined.Dockerfile .
 
-# Create envfile.env
+# Create envfile.env (Ensure private key is set correctly)
+if [ -z "$COMBINED_SERVER_PRIVATE_KEY" ]; then
+    echo -e "${RED}Error: Private key is not set. Set COMBINED_SERVER_PRIVATE_KEY as an environment variable.${RESET}"
+    exit 1
+fi
+
 echo "Creating envfile.env..."
 cat <<EOF > envfile.env
 COMBINED_SERVER_CHAIN_RPC=https://evmrpc-testnet.0g.ai
-COMBINED_SERVER_PRIVATE_KEY=YOUR_PRIVATE_KEY
+COMBINED_SERVER_PRIVATE_KEY=$COMBINED_SERVER_PRIVATE_KEY
 ENTRANCE_CONTRACT_ADDR=0x857C0A28A8634614BB2C96039Cf4a20AFF709Aa9
-
 COMBINED_SERVER_RECEIPT_POLLING_ROUNDS=180
 COMBINED_SERVER_RECEIPT_POLLING_INTERVAL=1s
 COMBINED_SERVER_TX_GAS_LIMIT=2000000
@@ -85,11 +89,4 @@ BATCHER_CHAIN_READ_TIMEOUT=12s
 BATCHER_CHAIN_WRITE_TIMEOUT=13s
 EOF
 
-echo "Setup completed successfully!"
-
-# Final message
-echo "***************************************"
-echo "*                                     *"
-echo "*     Thank you for participating!    *"
-echo "*                                     *"
-echo "***************************************"
+echo -e "${GREEN}Setup completed successfully!${RESET}"
